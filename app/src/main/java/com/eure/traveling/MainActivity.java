@@ -71,7 +71,7 @@ public class MainActivity extends FragmentActivity implements ActionBar.TabListe
 
         @Override
         public Fragment getItem(int position) {
-            return ShotListFragment.newInstance(Type.valueOf(position).name().toLowerCase());
+            return ShotListFragment.newInstance(Type.valueOf(position).name());
         }
 
         /**

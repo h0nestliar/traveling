@@ -8,35 +8,17 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.List;
+import io.realm.OrderedRealmCollection;
+import io.realm.RealmBaseAdapter;
+import io.realm.RealmResults;
 
-public class ShotListAdapter extends BaseAdapter {
+public class ShotListAdapter extends RealmBaseAdapter<Shot> {
 
-    private Context context;
-    private List<Shot> shots;
-
-    public ShotListAdapter(Context context, List<Shot> shots) {
-        this.context = context;
-        this.shots = shots;
-    }
-
-    @Override
-    public int getCount() {
-        return shots.size();
-    }
-
-    @Override
-    public Shot getItem(int position) {
-        return shots.get(position);
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return position;
+    public ShotListAdapter(Context context, OrderedRealmCollection<Shot> data, boolean automaticUpdate) {
+        super(context, data, automaticUpdate);
     }
 
     @Override
@@ -60,11 +42,11 @@ public class ShotListAdapter extends BaseAdapter {
         return view;
     }
 
-    public boolean add(List<Shot> shots) {
-        boolean ress = this.shots.addAll(shots);
-        if (ress) {
-            notifyDataSetChanged();
+    public void add(RealmResults<Shot> shots) {
+        if (adapterData == null) {
+            updateData(shots);
+            return;
         }
-        return ress;
+        adapterData.addAll(shots);
     }
 }

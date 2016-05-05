@@ -3,21 +3,25 @@ package com.eure.traveling.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.io.Serializable;
+
+import io.realm.RealmObject;
+import io.realm.annotations.Ignore;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Shot {
+public class Shot extends RealmObject implements Serializable{
 
     private int id;
     private String title;
+    private String type = Type.ANIMATED.name();
+    @Ignore
+    private Type typeAsEnum;
     @JsonProperty("likes_count")
     private int likesCount;
     @JsonProperty("images")
     private Image image;
     @JsonProperty("user")
     private Designer designer;
-
-    public Shot() {
-
-    }
 
     public int getId() {
         return id;
@@ -33,6 +37,22 @@ public class Shot {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public Type getTypeAsEnum() {
+        return Type.valueOf(getType());
+    }
+
+    public void setTypeAsEnum(Type typeAsEnum) {
+        setType(typeAsEnum.name());
     }
 
     public int getLikesCount() {

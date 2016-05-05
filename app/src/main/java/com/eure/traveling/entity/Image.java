@@ -1,6 +1,8 @@
 package com.eure.traveling.entity;
 
-public class Image {
+import io.realm.RealmObject;
+
+public class Image extends RealmObject {
     private String hidpi;
     private String normal;
     private String teaser;

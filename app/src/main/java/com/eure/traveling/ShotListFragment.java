@@ -2,6 +2,7 @@ package com.eure.traveling;
 
 import com.eure.traveling.entity.Shot;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
@@ -9,12 +10,9 @@ import android.view.View;
 import android.widget.AbsListView;
 import android.widget.ListView;
 
-import java.io.IOException;
-import java.util.List;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import io.realm.Realm;
+import io.realm.RealmBaseAdapter;
+import io.realm.RealmResults;
 
 
 public class ShotListFragment extends ListFragment implements AbsListView.OnScrollListener {
@@ -30,21 +28,32 @@ public class ShotListFragment extends ListFragment implements AbsListView.OnScro
      */
     private int mCount = 1;
 
-    private String mType;
+    private String mTypeName;
 
     private ShotListAdapter mAdapter;
     private ListView mListView;
     private View mFooter;
 
+    private Realm mRealm;
+
     public ShotListFragment() {
     }
 
-    public static ShotListFragment newInstance(String type) {
+    public static ShotListFragment newInstance(String typeName) {
         ShotListFragment fragment = new ShotListFragment();
         Bundle args = new Bundle();
-        args.putString("type", type);
+        args.putString("typeName", typeName);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Intent intent = new Intent(getActivity(), DribbbleService.class);
+        intent.putExtra("typeName", getType());
+        intent.putExtra("page", mCount);
+        getActivity().startService(intent);
     }
 
     @Override
@@ -54,22 +63,25 @@ public class ShotListFragment extends ListFragment implements AbsListView.OnScro
         mListView = getListView();
         mListView.addFooterView(getFooter());
         mListView.setOnScrollListener(this);
+    }
 
-        try {
-            DribbbleService.main(new Callback<List<Shot>>() {
-                @Override
-                public void onResponse(Call<List<Shot>> call, Response<List<Shot>> response) {
-                    addListData(response.body());
-                }
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-                @Override
-                public void onFailure(Call<List<Shot>> call, Throwable t) {
+        mRealm = Realm.getDefaultInstance();
+        RealmResults<Shot> shots = mRealm.where(Shot.class)
+                                .equalTo("type", getType())
+                                .findAll();
+        addListData(shots);
+    }
 
-                }
-            }, getType(), mCount);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        ((RealmBaseAdapter<?>)getListAdapter()).updateRealmResults(null);
+        mRealm.close();
+        mRealm = null;
     }
 
     @Override
@@ -102,10 +114,10 @@ public class ShotListFragment extends ListFragment implements AbsListView.OnScro
 
 
     private String getType() {
-        if (mType == null) {
-            mType = getArguments().getString("type");
+        if (mTypeName == null) {
+            mTypeName = getArguments().getString("typeName");
         }
-        return mType;
+        return mTypeName;
     }
 
     private ListView getMyListView() {
@@ -130,9 +142,9 @@ public class ShotListFragment extends ListFragment implements AbsListView.OnScro
         getMyListView().removeFooterView(getFooter());
     }
 
-    private void addListData(List<Shot> shots) {
+    private void addListData(RealmResults<Shot> shots) {
         if (mAdapter == null) {
-            mAdapter = new ShotListAdapter(getActivity(), shots);
+            mAdapter = new ShotListAdapter(getActivity(), shots, true);
             setListAdapter(mAdapter);
         } else {
             mAdapter.add(shots);
@@ -145,21 +157,10 @@ public class ShotListFragment extends ListFragment implements AbsListView.OnScro
             return;
         }
         mCount++;
-        try {
-            DribbbleService.main(new Callback<List<Shot>>() {
-                @Override
-                public void onResponse(Call<List<Shot>> call, Response<List<Shot>> response) {
-                    addListData(response.body());
-                }
-
-                @Override
-                public void onFailure(Call<List<Shot>> call, Throwable t) {
-
-                }
-            }, getType(), mCount);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Intent intent = new Intent(getActivity(), DribbbleService.class);
+        intent.putExtra("typeName", getType());
+        intent.putExtra("page", mCount);
+        getActivity().startService(intent);
     }
 
 }

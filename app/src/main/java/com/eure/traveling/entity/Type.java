@@ -1,6 +1,6 @@
 package com.eure.traveling.entity;
 
-public enum Type {
+public enum Type{
     ANIMATED(0),
     ATTACHMENTS(1),
     DEBUTS(2),

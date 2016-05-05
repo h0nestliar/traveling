@@ -2,8 +2,10 @@ package com.eure.traveling.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import io.realm.RealmObject;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Designer {
+public class Designer extends RealmObject {
 
     public int id;
     public String name;
